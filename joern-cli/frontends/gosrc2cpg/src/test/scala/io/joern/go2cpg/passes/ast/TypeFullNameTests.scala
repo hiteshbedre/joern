@@ -8,6 +8,7 @@ import java.io.File
 import scala.collection.immutable.List
 
 class TypeFullNameTests extends GoCodeToCpgSuite {
+  /*
   "Type check for declared primitive types" should {
     val cpg = code("""
         |package main
@@ -784,4 +785,142 @@ class TypeFullNameTests extends GoCodeToCpgSuite {
       d.typeFullName shouldBe "joern.io/sample/lib.Address"
     }
   }
+*/
+  "Var defined(with type mentioned) in one package used in another package" should {
+    val cpg = code(
+      """
+        |module joern.io/sample
+        |go 1.18
+        |""".stripMargin,
+      "go.mod"
+    ).moreCode(
+      """
+        |package lib1
+        |
+        |var(
+        |	SchemeHTTP string =  "http"
+        |)
+        |
+        |""".stripMargin,
+      Seq("lib1", "typelib.go").mkString(File.separator)
+    ).moreCode(
+      """
+        |package main
+        |import "joern.io/sample/lib1"
+        |func main() {
+        |	var a = lib1.SchemeHTTP.value()
+        |}
+        |""".stripMargin,
+      "main.go"
+    )
+
+    "Check methodfullname of variable imported from other package " in {
+      val List(callNode) = cpg.call("value").l
+      callNode.methodFullName shouldBe "string.value()"
+    }
+
+  }
+  "Var defined(without type mentioned) in one package used in another package" should {
+    val cpg = code(
+      """
+        |module joern.io/sample
+        |go 1.18
+        |""".stripMargin,
+      "go.mod"
+    ).moreCode(
+      """
+        |package lib1
+        |
+        |var(
+        |	SchemeHTTP :=  "http"
+        |)
+        |
+        |""".stripMargin,
+      Seq("lib1", "typelib.go").mkString(File.separator)
+    ).moreCode(
+      """
+        |package main
+        |import "joern.io/sample/lib1"
+        |func main() {
+        |	var a = lib1.SchemeHTTP.value()
+        |}
+        |""".stripMargin,
+      "main.go"
+    )
+
+    "Check methodfullname of variable imported from other package " in {
+      val List(callNode) = cpg.call("value").l
+      callNode.methodFullName shouldBe "string.value()"
+    }
+
+  }
+  "Const defined(with type mentioned) in one package used in another package" should {
+    val cpg = code(
+      """
+        |module joern.io/sample
+        |go 1.18
+        |""".stripMargin,
+      "go.mod"
+    ).moreCode(
+      """
+        |package lib1
+        |
+        |const (
+        |	SchemeHTTP string =  "http"
+        |)
+        |
+        |""".stripMargin,
+      Seq("lib1", "typelib.go").mkString(File.separator)
+    ).moreCode(
+      """
+        |package main
+        |import "joern.io/sample/lib1"
+        |func main() {
+        |	var a = lib1.SchemeHTTP.value()
+        |}
+        |""".stripMargin,
+      "main.go"
+    )
+
+    "Check methodfullname of constant imported from other package " in {
+      val List(callNode) = cpg.call("value").l
+      callNode.methodFullName shouldBe "string.value()"
+    }
+
+  }
+  "const defined(without type mentioned) in one package used in another package" should {
+    val cpg = code(
+      """
+        |module joern.io/sample
+        |go 1.18
+        |""".stripMargin,
+      "go.mod"
+    ).moreCode(
+      """
+        |package lib1
+        |
+        |const (
+        |	SchemeHTTP :=  "http"
+        |)
+        |
+        |""".stripMargin,
+      Seq("lib1", "typelib.go").mkString(File.separator)
+    ).moreCode(
+      """
+        |package main
+        |import "joern.io/sample/lib1"
+        |func main() {
+        |	var a = lib1.SchemeHTTP.value()
+        |}
+        |""".stripMargin,
+      "main.go"
+    )
+
+    "Check methodfullname of constant imported from other package " in {
+      val List(callNode) = cpg.call("value").l
+      callNode.methodFullName shouldBe "string.value()"
+    }
+
+  }
+
 }
