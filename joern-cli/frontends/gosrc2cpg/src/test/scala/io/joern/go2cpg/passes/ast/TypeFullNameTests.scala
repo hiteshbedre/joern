@@ -8,7 +8,7 @@ import java.io.File
 import scala.collection.immutable.List
 
 class TypeFullNameTests extends GoCodeToCpgSuite {
-  /*
+
   "Type check for declared primitive types" should {
     val cpg = code("""
         |package main
@@ -785,7 +785,7 @@ class TypeFullNameTests extends GoCodeToCpgSuite {
       d.typeFullName shouldBe "joern.io/sample/lib.Address"
     }
   }
-*/
+
   "Var defined(with type mentioned) in one package used in another package" should {
     val cpg = code(
       """
